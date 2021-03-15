@@ -1,6 +1,6 @@
 {
 	"name": "git-client-ibmi",
-	"displayName": "IBM i: Git Client",
+	"displayName": "Git Client for IBM i",
 	"description": "A git client that works on a remote IBM i",
 	"version": "0.0.2",
 	"repository": {
