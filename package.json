@@ -2,7 +2,7 @@
 	"name": "git-client-ibmi",
 	"displayName": "IBM i: Git Client",
 	"description": "A git client that works on a remote IBM i",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"repository": {
 		"url": "https://github.com/halcyon-tech/git-client-ibmi"
 	},
