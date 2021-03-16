@@ -65,6 +65,71 @@ module.exports = class Status {
         }
       }),
 
+      vscode.commands.registerCommand(`git-client-ibmi.status.commit`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            const message = await vscode.window.showInputBox({
+              prompt: `Commit message`
+            });
+
+            if (message) {
+              try {
+                await repo.commit(message);
+                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                vscode.window.showInformationMessage(`Commit successful.`);
+              } catch (e) {
+                vscode.window.showErrorMessage(`Error making commit in ${repoPath}. ${e}`);
+              }
+
+              this.refresh();
+            }
+          }
+        }
+      }),
+
+      vscode.commands.registerCommand(`git-client-ibmi.status.pull`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            try {
+              await repo.pull()
+              await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+              vscode.window.showInformationMessage(`Pull successful.`);
+            } catch (e) {
+              vscode.window.showErrorMessage(e);
+            }
+            
+            this.refresh();
+          }
+        }
+      }),
+
+      vscode.commands.registerCommand(`git-client-ibmi.status.push`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            try {
+              await repo.push();
+              vscode.window.showInformationMessage(`Push successful.`);
+            } catch (e) {
+              vscode.window.showErrorMessage(e);
+            }
+            
+            this.refresh();
+          }
+        }
+      }),
+
       vscode.workspace.onDidSaveTextDocument((document) => {
         if (document.uri.scheme === `streamfile`) {
           const connection = instance.getConnection();

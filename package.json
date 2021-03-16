@@ -32,6 +32,9 @@
 		"onCommand:git-client-ibmi.status.add",
 		"onCommand:git-client-ibmi.status.remove",
 		"onCommand:git-client-ibmi.status.restore",
+		"onCommand:git-client-ibmi.status.commit",
+		"onCommand:git-client-ibmi.status.pull",
+		"onCommand:git-client-ibmi.status.push",
 		"onView:git-client-ibmi.commits",
 		"onCommand:git-client-ibmi.commits.refresh",
 		"onView:git-client-ibmi.fileHistory",
@@ -60,6 +63,24 @@
 				"command": "git-client-ibmi.status.restore",
 				"title": "Restore file",
 				"category": "Git on IBM i"
+			},
+			{
+				"command": "git-client-ibmi.status.commit",
+				"title": "Commit staged",
+				"category": "Git on IBM i",
+				"icon": "$(git-commit)"
+			},
+			{
+				"command": "git-client-ibmi.status.pull",
+				"title": "Pull from remote",
+				"category": "Git on IBM i",
+				"icon": "$(repo-pull)"
+			},
+			{
+				"command": "git-client-ibmi.status.push",
+				"title": "Push to remote",
+				"category": "Git on IBM i",
+				"icon": "$(repo-push)"
 			},
 			{
 				"command": "git-client-ibmi.commits.refresh",
@@ -102,7 +123,24 @@
 			]
 		},
 		"menus": {
-			"view/title": [{
+			"view/title": [
+				{
+					"command": "git-client-ibmi.status.commit",
+					"group": "navigation",
+					"when": "view == git-client-ibmi.status"
+				},
+				{
+					"command": "git-client-ibmi.status.pull",
+					"group": "navigation",
+					"when": "view == git-client-ibmi.status"
+				},
+
+				{
+					"command": "git-client-ibmi.status.push",
+					"group": "navigation",
+					"when": "view == git-client-ibmi.status"
+				},
+				{
 					"command": "git-client-ibmi.status.refresh",
 					"group": "navigation",
 					"when": "view == git-client-ibmi.status"
@@ -113,17 +151,14 @@
 					"when": "view == git-client-ibmi.commits"
 				}
 			],
-			"view/item/context": [{
-					"command": "git-client-ibmi.status.add",
-					"when": "view == git-client-ibmi.status && viewItem == unstaged"
-				},
+			"view/item/context": [
 				{
 					"command": "git-client-ibmi.status.remove",
 					"when": "view == git-client-ibmi.status && viewItem == staged"
 				},
 				{
-					"command": "git-client-ibmi.status.restore",
-					"when": "view == git-client-ibmi.status && viewItem == staged"
+					"command": "git-client-ibmi.status.add",
+					"when": "view == git-client-ibmi.status && viewItem == unstaged"
 				},
 				{
 					"command": "git-client-ibmi.status.restore",

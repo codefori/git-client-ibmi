@@ -180,4 +180,43 @@ module.exports = class Git {
       this.path,
     );
   }
+
+  /**
+   * Make a commit
+   * @param {string} message 
+   */
+  async commit(message) {
+    const connection = instance.getConnection();
+
+    message = message.replace(new RegExp(`"`, `g`), `\\"`);
+    
+    await connection.paseCommand(
+      `${this.gitPath} commit -m "${message}"`,
+      this.path,
+    );
+  }
+
+  /**
+   * Push commits
+   */
+  async push() {
+    const connection = instance.getConnection();
+
+    await connection.paseCommand(
+      `${this.gitPath} push`,
+      this.path,
+    );
+  }
+
+  /**
+   * Pull commits
+   */
+  async pull() {
+    const connection = instance.getConnection();
+
+    await connection.paseCommand(
+      `${this.gitPath} pull`,
+      this.path,
+    );
+  }
 }
