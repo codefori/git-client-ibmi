@@ -10,7 +10,12 @@ module.exports = class Status {
    * @param {vscode.ExtensionContext} context
    */
   constructor(context) {
+    //Used for git status
     this.status = undefined;
+
+    //Used for moving members to streamfiles and vice-versa
+    /** @type {{library: string, ifsPath: string, asp?: string}[]|undefined} */
+    this.gitLibraries = undefined;
 
     this.emitter = new vscode.EventEmitter();
     this.onDidChangeTreeData = this.emitter.event;
@@ -18,6 +23,8 @@ module.exports = class Status {
     context.subscriptions.push(
       vscode.workspace.onDidChangeConfiguration(async event => {
         if (event.affectsConfiguration(`code-for-ibmi.connectionSettings`)) {
+          this.gitLibraries = undefined;
+          this.fetchGitLibs();
           this.refresh();
         }
       }),
@@ -54,6 +61,7 @@ module.exports = class Status {
 
       vscode.commands.registerCommand(`git-client-ibmi.status.restore`, async (node) => {
         const connection = instance.getConnection();
+        const content = instance.getContent();
         const repoPath = connection.config.homeDirectory;
         const repo = new Git(repoPath);
         
@@ -61,6 +69,27 @@ module.exports = class Status {
           if (repo.canUseGit() && await repo.isGitRepo()) {
             await repo.restore(node.path);
             this.refresh();
+
+            await this.fetchGitLibs();
+            if (this.gitLibraries) {
+              const libConfig = this.gitLibraries.find(setting => setting.ifsPath.toUpperCase().startsWith(repoPath.toUpperCase()));
+
+              if (libConfig) {
+                const pathParts = node.path.split(`/`);
+                
+                const library = libConfig.library.toUpperCase();
+                const sourceFile = pathParts[pathParts.length-2].toUpperCase();
+                let memberName = pathParts[pathParts.length-1].toUpperCase();
+                memberName = memberName.substring(0, memberName.lastIndexOf(`.`));
+
+                try {
+                  const fileContent = await content.downloadStreamfile(path.posix.join(repoPath, node.path));
+                  await content.uploadMemberContent(libConfig.asp, library, sourceFile, memberName, fileContent);
+                } catch (e) {
+                  vscode.window.showErrorMessage(`Error copying back to source member ${library}/${sourceFile}/${memberName}. ${e}`)
+                }
+              }
+            }
           }
         }
       }),
@@ -130,15 +159,42 @@ module.exports = class Status {
         }
       }),
 
-      vscode.workspace.onDidSaveTextDocument((document) => {
-        if (document.uri.scheme === `streamfile`) {
-          const connection = instance.getConnection();
+      vscode.workspace.onDidSaveTextDocument(async (document) => {
+        const connection = instance.getConnection();
 
-          if (connection) {
-            const repoPath = connection.config.homeDirectory;
+        if (connection) {
+          const repoPath = connection.config.homeDirectory;
+          const content = instance.getContent();
+
+          switch (document.uri.scheme) {
+          case `member`:
+            await this.fetchGitLibs();
+
+            if (this.gitLibraries) {
+              let memberParts = document.uri.path.split(`/`);
+              const library = memberParts[memberParts.length-3].toUpperCase();
+              const sourceFile = memberParts[memberParts.length-2].toLowerCase();
+              const baseName = memberParts[memberParts.length-1].toLowerCase();
+              
+              const libConfig = this.gitLibraries.find(setting => setting.library.toUpperCase() === library);
+
+              if (libConfig) {
+                await connection.paseCommand(`mkdir ${path.posix.join(libConfig.ifsPath, sourceFile)}`, `.`, 1);
+                await content.writeStreamfile(path.posix.join(libConfig.ifsPath, sourceFile, baseName), document.getText());
+
+                if (libConfig.ifsPath.toUpperCase() === repoPath.toUpperCase()) {
+                  this.refresh();
+                }
+              }
+            }
+            break;
+
+          case `streamfile`:
             if (document.uri.path.startsWith(repoPath)) {
               this.refresh();
             }
+            break;
+
           }
         }
       })
@@ -147,6 +203,50 @@ module.exports = class Status {
 
   refresh() {
     this.emitter.fire();
+  }
+
+  async fetchGitLibs() {
+    const connection = instance.getConnection();
+    if (connection) {
+      const content = instance.getContent();
+
+      if (this.gitLibraries === undefined) {
+        /** @type {string} */
+        let jsonContent;
+        let gitlibs;
+        
+        try {
+          jsonContent = await content.downloadStreamfile(`/.gitlibs.json`);
+        } catch (e) {
+          this.gitLibraries = false;
+          //Okay.. file doesn't exist probs
+        }
+
+        if (jsonContent) {
+          try {
+            gitlibs = JSON.parse(jsonContent);
+          } catch (e) {
+            vscode.window.showErrorMessage(`Unable to read .gitlibs.json. Invalid JSON.`);
+          }
+        }
+
+        if (gitlibs) {
+          let isValid = true;
+
+          for (const configItem of gitlibs) {
+            if (typeof configItem.library !== `string` || typeof configItem.ifsPath !== `string`) {
+              isValid = false;
+            }
+          }
+
+          if (isValid) {
+            this.gitLibraries = gitlibs;
+          } else {
+            vscode.window.showErrorMessage(`.gitlibs.json in incorrect format.`);
+          }
+        }
+      } 
+    }
   }
 
   /**
