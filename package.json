@@ -27,6 +27,7 @@
 		"Other"
 	],
 	"activationEvents": [
+		"onCommand:git-client-ibmi.createGitLibs",
 		"onView:git-client-ibmi.status",
 		"onCommand:git-client-ibmi.status.refresh",
 		"onCommand:git-client-ibmi.status.add",
@@ -43,7 +44,13 @@
 	],
 	"main": "./extension",
 	"contributes": {
-		"commands": [{
+		"commands": [
+			{
+				"command": "git-client-ibmi.createGitLibs",
+				"title": "Configure new git library",
+				"category": "Git on IBM i"
+			},
+			{
 				"command": "git-client-ibmi.status.refresh",
 				"title": "Refresh status view",
 				"category": "Git on IBM i",

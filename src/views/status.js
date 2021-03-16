@@ -233,6 +233,8 @@ module.exports = class Status {
         if (gitlibs) {
           let isValid = true;
 
+          if (gitlibs.length === undefined) isValid = false;
+
           for (const configItem of gitlibs) {
             if (typeof configItem.library !== `string` || typeof configItem.ifsPath !== `string`) {
               isValid = false;
