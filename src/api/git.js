@@ -219,4 +219,16 @@ module.exports = class Git {
       this.path,
     );
   }
+
+    /**
+   * Create a branch
+   * @param {string} branch_name 
+   */
+     async branch(branch_name) {
+      const connection = instance.getConnection();
+      await connection.paseCommand(
+        `${this.gitPath} branch "${branch_name}"`,
+        this.path,
+      );
+    }
 }

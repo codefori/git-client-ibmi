@@ -159,6 +159,32 @@ module.exports = class Status {
         }
       }),
 
+      vscode.commands.registerCommand(`git-client-ibmi.status.branch`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            const branch_name = await vscode.window.showInputBox({
+              prompt: `New branch name`
+            });
+
+            if (branch_name) {
+              try {
+                await repo.branch(branch_name);
+                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                vscode.window.showInformationMessage(`Branch created successfully.`);
+              } catch (e) {
+                vscode.window.showErrorMessage(`Error creating branch in ${repoPath}. ${e}`);
+              }
+
+              this.refresh();
+            }
+          }
+        }
+      }),
+
       vscode.workspace.onDidSaveTextDocument(async (document) => {
         const connection = instance.getConnection();
 

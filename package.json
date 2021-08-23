@@ -104,6 +104,12 @@
 				"command": "git-client-ibmi.viewCommitFileDiff",
 				"title": "View diff",
 				"category": "Git on IBM i"
+			},
+			{
+				"command": "git-client-ibmi.status.branch",
+				"title": "Create Branch",
+				"category": "Git on IBM i",
+				"icon": "$(git-branch)"
 			}
 		],
 		"viewsWelcome": [{
