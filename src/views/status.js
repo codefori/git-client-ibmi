@@ -185,6 +185,72 @@ module.exports = class Status {
         }
       }),
 
+      //TODO: add delete branch option when right clicking branch within local branch view
+      vscode.commands.registerCommand(`git-client-ibmi.status.deleteLocalBranch`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            const branch_name = await vscode.window.showInputBox({
+              prompt: `Local branch to delete`
+            });
+
+            if (branch_name) {
+              try {
+                await repo.deleteLocalBranch(branch_name);
+                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                vscode.window.showInformationMessage(`Local branch successfully deleted.`);
+              } catch (e) {
+                vscode.window.showErrorMessage(`Error deleting local branch in ${repoPath}. ${e}`);
+              }
+
+              this.refresh();
+            }
+          }
+        }
+      }),
+
+      //TODO: add delete branch option when right clicking branch within remote branch view
+      vscode.commands.registerCommand(`git-client-ibmi.status.deleteRemoteBranch`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            const remote_name_input = await vscode.window.showInputBox({
+              prompt: `Remote name ("origin" by default)`
+            });
+            //TODO: add default value of "origin"
+            // can not re-use remote_name_input because it is requred to be const by the input box(?) verify that that is why I get an error when removing the "const"
+            // remote_name = '';
+            // if (remote_name_input == ''){
+            //   remote_name = 'origin';
+            // }
+            // else{
+            //   remote_name = remote_name_input;
+            // }
+            const branch_name = await vscode.window.showInputBox({
+              prompt: `Remote branch to delete`
+            });
+
+            if (remote_name_input && branch_name) {
+              try {
+                await repo.deleteRemoteBranch(remote_name_input, branch_name);
+                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                vscode.window.showInformationMessage(`Remote branch successfully deleted.`);
+              } catch (e) {
+                vscode.window.showErrorMessage(`Error deleting remote branch in ${repoPath}. ${e}`);
+              }
+
+              this.refresh();
+            }
+          }
+        }
+      }),
+
       vscode.workspace.onDidSaveTextDocument(async (document) => {
         const connection = instance.getConnection();
 

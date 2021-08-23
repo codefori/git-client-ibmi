@@ -231,4 +231,29 @@ module.exports = class Git {
         this.path,
       );
     }
+
+    /**
+   * Delete a local branch
+   * @param {string} branch_name 
+   */
+     async deleteLocalBranch(branch_name) {
+      const connection = instance.getConnection();
+      await connection.paseCommand(
+        `${this.gitPath} branch -d "${branch_name}"`,
+        this.path,
+      );
+    }
+
+    /**
+   * Delete a remote branch
+   * @param {string} remote_name 
+   * @param {string} branch_name 
+   */
+     async deleteRemoteBranch(remote_name, branch_name) {
+      const connection = instance.getConnection();
+      await connection.paseCommand(
+        `${this.gitPath} push "${remote_name}" --delete "${branch_name}"`,
+        this.path,
+      );
+    }
 }
