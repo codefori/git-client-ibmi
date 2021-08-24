@@ -220,11 +220,47 @@ module.exports = class Git {
     );
   }
 
+  /**
+   * @returns {remote: branch_name[], local: {branch_name, state}[]}}
+   */
+   async list_branches() {
+    const connection = instance.getConnection();
+    let remote = [], local = [];
+
+    let item = {branch_name: '', state: ''};
+    let content = await connection.paseCommand(
+      `echo '"' && ${this.gitPath} branch --all --list`,
+      this.path,
+    );
+
+    content = content.substring(1);
+
+    for (let line of content.split(`\n`)) {
+      if (line.trim() === ``) continue;
+      
+      item.state = (line[0] == '*') ? 'checked out' : '';
+      //item.branch_name = line.split(' ')[1];
+      item.branch_name = line.substr(2);
+      const remote_or_local = (item.branch_name.split('/')[0] == 'remotes') ? 'remote' : 'local';
+
+      switch (remote_or_local) {
+        case `remote`:
+          remote.push(item.branch_name);
+          break;
+        case `local`:
+          local.push({branch_name: item.branch_name, state: item.state});
+          break;
+      }
+    }
+
+    return {remote, local};
+  }
+
     /**
    * Create a branch
    * @param {string} new_branch_name 
    */
-     async branch(new_branch_name) {
+     async create_branch(new_branch_name) {
       const connection = instance.getConnection();
       await connection.paseCommand(
         `${this.gitPath} branch "${new_branch_name}"`,

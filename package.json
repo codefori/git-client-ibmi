@@ -36,11 +36,18 @@
 		"onCommand:git-client-ibmi.status.commit",
 		"onCommand:git-client-ibmi.status.pull",
 		"onCommand:git-client-ibmi.status.push",
+		"onCommand:git-client-ibmi.status.branch",
+		"onCommand:git-client-ibmi.status.deleteLocalbranch",
+		"onCommand:git-client-ibmi.status.deleteRemoteBranch",
+		"onCommand:git-client-ibmi.status.checkout",
+		"onCommand:git-client-ibmi.status.merge",
 		"onView:git-client-ibmi.commits",
 		"onCommand:git-client-ibmi.commits.refresh",
 		"onView:git-client-ibmi.fileHistory",
 		"onCommand:git-client-ibmi.viewCommitFile",
-		"onCommand:git-client-ibmi.viewCommitFileDiff"
+		"onCommand:git-client-ibmi.viewCommitFileDiff",
+		"onCommand:git-client-ibmi.branches.refresh",
+		"onCommand:git-client-ibmi.branches.refresh"
 	],
 	"main": "./extension",
 	"contributes": {
@@ -106,29 +113,35 @@
 				"category": "Git on IBM i"
 			},
 			{
-				"command": "git-client-ibmi.status.branch",
+				"command": "git-client-ibmi.branches.branch",
 				"title": "Create Branch",
 				"category": "Git on IBM i"
 			},
 			{
-				"command": "git-client-ibmi.status.deleteLocalBranch",
+				"command": "git-client-ibmi.branches.deleteLocalBranch",
 				"title": "Delete Local Branch",
 				"category": "Git on IBM i"
 			},
 			{
-				"command": "git-client-ibmi.status.deleteRemoteBranch",
+				"command": "git-client-ibmi.branches.deleteRemoteBranch",
 				"title": "Delete Remote Branch",
 				"category": "Git on IBM i"
 			},
 			{
-				"command": "git-client-ibmi.status.checkout",
+				"command": "git-client-ibmi.branches.checkout",
 				"title": "Checkout Branch",
 				"category": "Git on IBM i"
 			},
 			{
-				"command": "git-client-ibmi.status.merge",
+				"command": "git-client-ibmi.branches.merge",
 				"title": "Merge Branch",
 				"category": "Git on IBM i"
+			},
+			{
+				"command": "git-client-ibmi.branches.refresh",
+				"title": "Refresh branches view",
+				"category": "Git on IBM i",
+				"icon": "$(refresh)"
 			}
 		],
 		"viewsWelcome": [{
@@ -138,6 +151,11 @@
 		}],
 		"views": {
 			"scm": [{
+					"id": "git-client-ibmi.branches",
+					"name": "Branches",
+					"contextualTitle": "IBM i"
+				},
+				{
 					"id": "git-client-ibmi.status",
 					"name": "Status",
 					"contextualTitle": "IBM i"
@@ -181,6 +199,11 @@
 					"command": "git-client-ibmi.commits.refresh",
 					"group": "navigation",
 					"when": "view == git-client-ibmi.commits"
+				},
+				{
+					"command": "git-client-ibmi.branches.refresh",
+					"group": "navigation",
+					"when": "view == git-client-ibmi.branches"
 				}
 			],
 			"view/item/context": [
@@ -199,6 +222,10 @@
 				{
 					"command": "git-client-ibmi.viewCommitFile",
 					"when": "view == git-client-ibmi.commits && viewItem == commitFile"
+				},
+				{
+					"command": "git-client-ibmi.branches.checkout",
+					"when": "view == git-client-ibmi.branches"
 				}
 			]
 		}

@@ -4,6 +4,7 @@ const vscode = require(`vscode`);
 
 const {instance, Field, CustomUI} = vscode.extensions.getExtension(`halcyontechltd.code-for-ibmi`).exports;
 
+const branchesView = require(`./src/views/branches`);
 const statusView = require(`./src/views/status`);
 const commitView = require(`./src/views/commits`);
 const fileHistory = require(`./src/views/fileHistory`);
@@ -19,6 +20,11 @@ function activate(context) {
   console.log(`Congratulations, your extension "git-client-ibmi" is now active!`);
 
   context.subscriptions.push(
+    vscode.window.registerTreeDataProvider(
+      `git-client-ibmi.branches`,
+      new branchesView(context)
+    ),
+
     vscode.window.registerTreeDataProvider(
       `git-client-ibmi.status`,
       new statusView(context)
