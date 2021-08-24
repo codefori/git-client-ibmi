@@ -119,6 +119,11 @@
 				"command": "git-client-ibmi.status.deleteRemoteBranch",
 				"title": "Delete Remote Branch",
 				"category": "Git on IBM i"
+			},
+			{
+				"command": "git-client-ibmi.status.checkout",
+				"title": "Checkout Branch",
+				"category": "Git on IBM i"
 			}
 		],
 		"viewsWelcome": [{

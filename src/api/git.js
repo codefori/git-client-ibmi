@@ -256,4 +256,16 @@ module.exports = class Git {
         this.path,
       );
     }
+
+    /**
+   * Checkout a branch
+   * @param {string} branch_name 
+   */
+     async checkout(branch_name) {
+      const connection = instance.getConnection();
+      await connection.paseCommand(
+        `${this.gitPath} checkout "${branch_name}"`,
+        this.path,
+      );
+    }
 }

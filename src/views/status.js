@@ -251,6 +251,33 @@ module.exports = class Status {
         }
       }),
 
+      //TODO: add checkout option when right clicking branch in branch view
+      vscode.commands.registerCommand(`git-client-ibmi.status.checkout`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            const branch_name = await vscode.window.showInputBox({
+              prompt: `Name of branch to checkout`
+            });
+
+            if (branch_name) {
+              try {
+                await repo.checkout(branch_name);
+                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                vscode.window.showInformationMessage(`${branch_name} checked out successfully.`);
+              } catch (e) {
+                vscode.window.showErrorMessage(`Error creating branch in ${repoPath}. ${e}`);
+              }
+
+              this.refresh();
+            }
+          }
+        }
+      }),
+
       vscode.workspace.onDidSaveTextDocument(async (document) => {
         const connection = instance.getConnection();
 
