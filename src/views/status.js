@@ -166,13 +166,13 @@ module.exports = class Status {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const branch_name = await vscode.window.showInputBox({
+            const new_branch_name = await vscode.window.showInputBox({
               prompt: `New branch name`
             });
 
-            if (branch_name) {
+            if (new_branch_name) {
               try {
-                await repo.branch(branch_name);
+                await repo.branch(new_branch_name);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Branch created successfully.`);
               } catch (e) {
@@ -193,13 +193,13 @@ module.exports = class Status {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const branch_name = await vscode.window.showInputBox({
+            const local_branch_to_delete = await vscode.window.showInputBox({
               prompt: `Local branch to delete`
             });
 
-            if (branch_name) {
+            if (local_branch_to_delete) {
               try {
-                await repo.deleteLocalBranch(branch_name);
+                await repo.deleteLocalBranch(local_branch_to_delete);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Local branch successfully deleted.`);
               } catch (e) {
@@ -220,25 +220,17 @@ module.exports = class Status {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const remote_name_input = await vscode.window.showInputBox({
+            const remote_to_delete_from = await vscode.window.showInputBox({
               prompt: `Remote name ("origin" by default)`
             });
-            //TODO: add default value of "origin"
-            // can not re-use remote_name_input because it is requred to be const by the input box(?) verify that that is why I get an error when removing the "const"
-            // remote_name = '';
-            // if (remote_name_input == ''){
-            //   remote_name = 'origin';
-            // }
-            // else{
-            //   remote_name = remote_name_input;
-            // }
-            const branch_name = await vscode.window.showInputBox({
+            //TODO: add default value of "origin" if remote_to_delete_from is not specified.
+            const remote_branch_to_delete = await vscode.window.showInputBox({
               prompt: `Remote branch to delete`
             });
 
-            if (remote_name_input && branch_name) {
+            if (remote_to_delete_from && remote_branch_to_delete) {
               try {
-                await repo.deleteRemoteBranch(remote_name_input, branch_name);
+                await repo.deleteRemoteBranch(remote_to_delete_from, remote_branch_to_delete);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Remote branch successfully deleted.`);
               } catch (e) {
@@ -252,6 +244,7 @@ module.exports = class Status {
       }),
 
       //TODO: add checkout option when right clicking branch in branch view
+      //TODO: update content of files already open when checking out new branch. how should we handle unsaved changes?
       vscode.commands.registerCommand(`git-client-ibmi.status.checkout`, async () => {
         const connection = instance.getConnection();
         const repoPath = connection.config.homeDirectory;
@@ -259,17 +252,44 @@ module.exports = class Status {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const branch_name = await vscode.window.showInputBox({
+            const branch_to_checkout = await vscode.window.showInputBox({
               prompt: `Name of branch to checkout`
             });
 
-            if (branch_name) {
+            if (branch_to_checkout) {
               try {
-                await repo.checkout(branch_name);
+                await repo.checkout(branch_to_checkout);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
-                vscode.window.showInformationMessage(`${branch_name} checked out successfully.`);
+                vscode.window.showInformationMessage(`${branch_to_checkout} checked out successfully.`);
               } catch (e) {
                 vscode.window.showErrorMessage(`Error creating branch in ${repoPath}. ${e}`);
+              }
+
+              this.refresh();
+            }
+          }
+        }
+      }),
+
+      //TODO: add merge option when right clicking branch in branch view
+      vscode.commands.registerCommand(`git-client-ibmi.status.merge`, async () => {
+        const connection = instance.getConnection();
+        const repoPath = connection.config.homeDirectory;
+        const repo = new Git(repoPath);
+
+        if (connection) {
+          if (repo.canUseGit() && await repo.isGitRepo()) {
+            const branch_to_merge_into_current_branch = await vscode.window.showInputBox({
+              prompt: `Name of branch to merge into the current branch`
+            });
+
+            if (branch_to_merge_into_current_branch) {
+              try {
+                await repo.merge(branch_to_merge_into_current_branch);
+                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                vscode.window.showInformationMessage(`${branch_to_merge_into_current_branch} successfully merged into current branch.`);
+              } catch (e) {
+                vscode.window.showErrorMessage(`Error merging branch in ${repoPath}. ${e}`);
               }
 
               this.refresh();

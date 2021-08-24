@@ -222,49 +222,61 @@ module.exports = class Git {
 
     /**
    * Create a branch
-   * @param {string} branch_name 
+   * @param {string} new_branch_name 
    */
-     async branch(branch_name) {
+     async branch(new_branch_name) {
       const connection = instance.getConnection();
       await connection.paseCommand(
-        `${this.gitPath} branch "${branch_name}"`,
+        `${this.gitPath} branch "${new_branch_name}"`,
         this.path,
       );
     }
 
     /**
    * Delete a local branch
-   * @param {string} branch_name 
+   * @param {string} local_branch_to_delete 
    */
-     async deleteLocalBranch(branch_name) {
+     async deleteLocalBranch(local_branch_to_delete) {
       const connection = instance.getConnection();
       await connection.paseCommand(
-        `${this.gitPath} branch -d "${branch_name}"`,
+        `${this.gitPath} branch -d "${local_branch_to_delete}"`,
         this.path,
       );
     }
 
     /**
    * Delete a remote branch
-   * @param {string} remote_name 
-   * @param {string} branch_name 
+   * @param {string} remote_to_delete_from 
+   * @param {string} remote_branch_to_delete 
    */
-     async deleteRemoteBranch(remote_name, branch_name) {
+     async deleteRemoteBranch(remote_to_delete_from, remote_branch_to_delete) {
       const connection = instance.getConnection();
       await connection.paseCommand(
-        `${this.gitPath} push "${remote_name}" --delete "${branch_name}"`,
+        `${this.gitPath} push "${remote_to_delete_from}" --delete "${remote_branch_to_delete}"`,
         this.path,
       );
     }
 
     /**
    * Checkout a branch
-   * @param {string} branch_name 
+   * @param {string} branch_to_checkout 
    */
-     async checkout(branch_name) {
+     async checkout(branch_to_checkout) {
       const connection = instance.getConnection();
       await connection.paseCommand(
-        `${this.gitPath} checkout "${branch_name}"`,
+        `${this.gitPath} checkout "${branch_to_checkout}"`,
+        this.path,
+      );
+    }
+
+    /**
+   * Merge a branch into the current branch
+   * @param {string} branch_to_merge_into_current_branch 
+   */
+     async merge(branch_to_merge_into_current_branch) {
+      const connection = instance.getConnection();
+      await connection.paseCommand(
+        `${this.gitPath} merge "${branch_to_merge_into_current_branch}"`,
         this.path,
       );
     }
