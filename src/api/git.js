@@ -239,7 +239,6 @@ module.exports = class Git {
       if (line.trim() === ``) continue;
       
       item.state = (line[0] == '*') ? 'checked out' : '';
-      //item.branch_name = line.split(' ')[1];
       item.branch_name = line.substr(2);
       const remote_or_local = (item.branch_name.split('/')[0] == 'remotes') ? 'remote' : 'local';
 
@@ -296,11 +295,19 @@ module.exports = class Git {
     /**
    * Checkout a branch
    * @param {string} branch_to_checkout 
+   * @param {string} remote_or_local 
    */
-     async checkout(branch_to_checkout) {
+     async checkout(branch_to_checkout, remote_or_local) {
       const connection = instance.getConnection();
+      if(remote_or_local == "remote"){
+        const split_branch_name = branch_to_checkout.split('/');
+        var command = `${this.gitPath} checkout -b "${split_branch_name[2]}" "${split_branch_name[1]}"/"${split_branch_name[2]}"`;
+      }
+      else{
+        var command = `${this.gitPath} checkout "${branch_to_checkout}"`;
+      }
       await connection.paseCommand(
-        `${this.gitPath} checkout "${branch_to_checkout}"`,
+        command,
         this.path,
       );
     }

@@ -115,7 +115,8 @@
 			{
 				"command": "git-client-ibmi.branches.branch",
 				"title": "Create Branch",
-				"category": "Git on IBM i"
+				"category": "Git on IBM i",
+				"icon": "$(refresh)"
 			},
 			{
 				"command": "git-client-ibmi.branches.deleteLocalBranch",
@@ -201,6 +202,11 @@
 					"when": "view == git-client-ibmi.commits"
 				},
 				{
+					"command": "git-client-ibmi.branches.branch",
+					"group": "navigation",
+					"when": "view == git-client-ibmi.branches"
+				},
+				{
 					"command": "git-client-ibmi.branches.refresh",
 					"group": "navigation",
 					"when": "view == git-client-ibmi.branches"
@@ -225,7 +231,19 @@
 				},
 				{
 					"command": "git-client-ibmi.branches.checkout",
-					"when": "view == git-client-ibmi.branches"
+					"when": "view == git-client-ibmi.branches && viewItem == remote || viewItem == local"
+				},
+				{
+					"command": "git-client-ibmi.branches.deleteLocalBranch",
+					"when": "view == git-client-ibmi.branches && viewItem == local"
+				},
+				{
+					"command": "git-client-ibmi.branches.deleteRemoteBranch",
+					"when": "view == git-client-ibmi.branches && viewItem == remote"
+				},
+				{
+					"command": "git-client-ibmi.branches.merge",
+					"when": "view == git-client-ibmi.branches && viewItem == local"
 				}
 			]
 		}

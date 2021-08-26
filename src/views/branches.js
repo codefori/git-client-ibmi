@@ -44,17 +44,22 @@ module.exports = class Branches {
         }
       }),
 
-      //TODO: add delete branch option when right clicking branch within local branch view
-      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteLocalBranch`, async () => {
+      //TODO: combine deleteLocalBranch and deleteRemoteBranch into one function with the contextValue ('remote' or 'local') as a parameter.
+      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteLocalBranch`, async (node) => {
         const connection = instance.getConnection();
         const repoPath = connection.config.homeDirectory;
         const repo = new Git(repoPath);
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const local_branch_to_delete = await vscode.window.showInputBox({
-              prompt: `Local branch to delete`
-            });
+            if (!node){
+              var local_branch_to_delete = await vscode.window.showInputBox({
+                prompt: `Local branch to delete`
+              });
+            }
+            else{
+              var local_branch_to_delete = node.branch_name;
+            }
 
             if (local_branch_to_delete) {
               try {
@@ -72,21 +77,25 @@ module.exports = class Branches {
         }
       }),
 
-      //TODO: add delete branch option when right clicking branch within remote branch view
-      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteRemoteBranch`, async () => {
+      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteRemoteBranch`, async (node) => {
         const connection = instance.getConnection();
         const repoPath = connection.config.homeDirectory;
         const repo = new Git(repoPath);
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const remote_to_delete_from = await vscode.window.showInputBox({
-              prompt: `Remote name ("origin" by default)`
-            });
-            //TODO: add default value of "origin" if remote_to_delete_from is not specified.
-            const remote_branch_to_delete = await vscode.window.showInputBox({
-              prompt: `Remote branch to delete`
-            });
+            if (!node){
+              var remote_to_delete_from = await vscode.window.showInputBox({
+                prompt: `Remote name`
+              });
+              var remote_branch_to_delete = await vscode.window.showInputBox({
+                prompt: `Remote branch to delete`
+              });
+            }
+            else{
+              var remote_to_delete_from = node.branch_name.split('/')[1];
+              var remote_branch_to_delete = node.branch_name.split('/')[2];
+            }
 
             if (remote_to_delete_from && remote_branch_to_delete) {
               try {
@@ -104,27 +113,31 @@ module.exports = class Branches {
         }
       }),
 
-      //TODO: add checkout option when right clicking branch in branch view
-      //TODO: update content of files already open when checking out new branch. how should we handle unsaved changes?
-      vscode.commands.registerCommand(`git-client-ibmi.branches.checkout`, async () => {
+      //TODO: refresh content of files already open when checking out different branch. how should we handle unsaved changes?
+      vscode.commands.registerCommand(`git-client-ibmi.branches.checkout`, async (node) => {
         const connection = instance.getConnection();
         const repoPath = connection.config.homeDirectory;
         const repo = new Git(repoPath);
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const branch_to_checkout = await vscode.window.showInputBox({
-              prompt: `Name of branch to checkout`
-            });
+            if (!node){
+              var branch_to_checkout = await vscode.window.showInputBox({
+                prompt: `Name of branch to checkout`
+              });
+            }
+            else{
+              var branch_to_checkout = node.branch_name;
+            }
 
             if (branch_to_checkout) {
               try {
-                await repo.checkout(branch_to_checkout);
+                await repo.checkout(branch_to_checkout, node.contextValue);
                 await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`${branch_to_checkout} checked out successfully.`);
               } catch (e) {
-                vscode.window.showErrorMessage(`Error creating branch in ${repoPath}. ${e}`);
+                vscode.window.showErrorMessage(`Error checking out branch in ${repoPath}. ${e}`);
               }
 
               this.refresh();
@@ -133,17 +146,21 @@ module.exports = class Branches {
         }
       }),
 
-      //TODO: add merge option when right clicking branch in branch view
-      vscode.commands.registerCommand(`git-client-ibmi.branches.merge`, async () => {
+      vscode.commands.registerCommand(`git-client-ibmi.branches.merge`, async (node) => {
         const connection = instance.getConnection();
         const repoPath = connection.config.homeDirectory;
         const repo = new Git(repoPath);
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const branch_to_merge_into_current_branch = await vscode.window.showInputBox({
-              prompt: `Name of branch to merge into the current branch`
-            });
+            if (!node){
+              var branch_to_merge_into_current_branch = await vscode.window.showInputBox({
+                prompt: `Name of branch to merge into the current branch`
+              });
+            }
+            else{
+              var branch_to_merge_into_current_branch = node.branch_name;
+            }
 
             if (branch_to_merge_into_current_branch) {
               try {
@@ -169,6 +186,7 @@ module.exports = class Branches {
     );
   }
 
+  //TODO: refresh branches view not working
   refresh() {
     this.emitter.fire();
   }
@@ -201,10 +219,11 @@ module.exports = class Branches {
         if (element) {
           switch (element.contextValue) {
             case `remote_branches`:
-              items = this.branch_list.remote.map(item => new Branch(item));
+              items = this.branch_list.remote.map(item => new Branch(item, 'remote'));
+              items.contextValue = 'remotes';
               break;
             case `local_branches`:
-              items = this.branch_list.local.map(item => new Branch(item.branch_name, item.state));
+              items = this.branch_list.local.map(item => new Branch(item.branch_name, 'local', item.state));
               break;
             }
         } else {
@@ -248,22 +267,18 @@ class Branch extends vscode.TreeItem {
   /**
    * 
    * @param {string} branch_name 
+   * @param {contextValue} contextValue
    * @param {string} state //empty string by default. only one branch can have the value of "checked out" at a time.
    */
-   constructor(branch_name, state = "") {
+   constructor(branch_name, contextValue, state = "") {
     super(branch_name, vscode.TreeItemCollapsibleState.None);
 
     this.branch_name = branch_name;
-    this.state = state;
+    this.contextValue = contextValue;
+    //this.state = state;
+    this.description = state;
 
     //TODO: add icon for git-branch
     this.iconPath = new vscode.ThemeIcon(`git-commit`);
-
-    //TODO: add remaining commands
-    this.command = {
-      command: 'git-client-ibmi.branches.checkout',
-      title: 'Checkout',
-      arguments: [branch_name]
-    };
   }
 }
