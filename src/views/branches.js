@@ -11,6 +11,7 @@ module.exports = class Branches {
     this.branch_list = undefined;
 
     this.emitter = new vscode.EventEmitter();
+    this.onDidChangeTreeData = this.emitter.event;
 
     context.subscriptions.push(
       vscode.commands.registerCommand(`git-client-ibmi.branches.refresh`, async () => {
@@ -31,7 +32,6 @@ module.exports = class Branches {
             if (new_branch_name) {
               try {
                 await repo.create_branch(new_branch_name);
-                await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Branch created successfully.`);
               } catch (e) {
@@ -64,7 +64,6 @@ module.exports = class Branches {
             if (local_branch_to_delete) {
               try {
                 await repo.deleteLocalBranch(local_branch_to_delete);
-                await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Local branch successfully deleted.`);
               } catch (e) {
@@ -100,7 +99,6 @@ module.exports = class Branches {
             if (remote_to_delete_from && remote_branch_to_delete) {
               try {
                 await repo.deleteRemoteBranch(remote_to_delete_from, remote_branch_to_delete);
-                await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Remote branch successfully deleted.`);
               } catch (e) {
@@ -133,7 +131,6 @@ module.exports = class Branches {
             if (branch_to_checkout) {
               try {
                 await repo.checkout(branch_to_checkout, node.contextValue);
-                await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`${branch_to_checkout} checked out successfully.`);
               } catch (e) {
@@ -165,7 +162,6 @@ module.exports = class Branches {
             if (branch_to_merge_into_current_branch) {
               try {
                 await repo.merge(branch_to_merge_into_current_branch);
-                await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`${branch_to_merge_into_current_branch} successfully merged into current branch.`);
               } catch (e) {
@@ -186,7 +182,6 @@ module.exports = class Branches {
     );
   }
 
-  //TODO: refresh branches view not working
   refresh() {
     this.emitter.fire();
   }
@@ -275,10 +270,8 @@ class Branch extends vscode.TreeItem {
 
     this.branch_name = branch_name;
     this.contextValue = contextValue;
-    //this.state = state;
     this.description = state;
 
-    //TODO: add icon for git-branch
-    this.iconPath = new vscode.ThemeIcon(`git-commit`);
+    this.iconPath = new vscode.ThemeIcon(`git-branch`);
   }
 }

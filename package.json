@@ -36,18 +36,17 @@
 		"onCommand:git-client-ibmi.status.commit",
 		"onCommand:git-client-ibmi.status.pull",
 		"onCommand:git-client-ibmi.status.push",
-		"onCommand:git-client-ibmi.status.branch",
-		"onCommand:git-client-ibmi.status.deleteLocalbranch",
-		"onCommand:git-client-ibmi.status.deleteRemoteBranch",
-		"onCommand:git-client-ibmi.status.checkout",
-		"onCommand:git-client-ibmi.status.merge",
 		"onView:git-client-ibmi.commits",
 		"onCommand:git-client-ibmi.commits.refresh",
 		"onView:git-client-ibmi.fileHistory",
 		"onCommand:git-client-ibmi.viewCommitFile",
 		"onCommand:git-client-ibmi.viewCommitFileDiff",
 		"onCommand:git-client-ibmi.branches.refresh",
-		"onCommand:git-client-ibmi.branches.refresh"
+		"onCommand:git-client-ibmi.branches.branch",
+		"onCommand:git-client-ibmi.branches.deleteLocalBranch",
+		"onCommand:git-client-ibmi.branches.deleteRemoteBranch",
+		"onCommand:git-client-ibmi.branches.checkout",
+		"onCommand:git-client-ibmi.branches.merge"
 	],
 	"main": "./extension",
 	"contributes": {
@@ -116,7 +115,7 @@
 				"command": "git-client-ibmi.branches.branch",
 				"title": "Create Branch",
 				"category": "Git on IBM i",
-				"icon": "$(refresh)"
+				"icon": "$(git-branch-create)"
 			},
 			{
 				"command": "git-client-ibmi.branches.deleteLocalBranch",
