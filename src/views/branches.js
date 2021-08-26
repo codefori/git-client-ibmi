@@ -44,8 +44,7 @@ module.exports = class Branches {
         }
       }),
 
-      //TODO: combine deleteLocalBranch and deleteRemoteBranch into one function with the contextValue ('remote' or 'local') as a parameter.
-      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteLocalBranch`, async (node) => {
+      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteBranch`, async (node) => {
         const connection = instance.getConnection();
         const repoPath = connection.config.homeDirectory;
         const repo = new Git(repoPath);
@@ -53,56 +52,23 @@ module.exports = class Branches {
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
             if (!node){
-              var local_branch_to_delete = await vscode.window.showInputBox({
-                prompt: `Local branch to delete`
+              var branch_to_delete = await vscode.window.showInputBox({
+                prompt: `Branch to delete`
               });
+              var remote_or_local = null;
             }
             else{
-              var local_branch_to_delete = node.branch_name;
+              var branch_to_delete = node.branch_name;
+              var remote_or_local = node.contextValue;
             }
 
-            if (local_branch_to_delete) {
+            if (branch_to_delete) {
               try {
-                await repo.deleteLocalBranch(local_branch_to_delete);
+                await repo.deleteBranch(branch_to_delete, remote_or_local);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
-                vscode.window.showInformationMessage(`Local branch successfully deleted.`);
+                vscode.window.showInformationMessage(`Branch successfully deleted.`);
               } catch (e) {
-                vscode.window.showErrorMessage(`Error deleting local branch in ${repoPath}. ${e}`);
-              }
-
-              this.refresh();
-            }
-          }
-        }
-      }),
-
-      vscode.commands.registerCommand(`git-client-ibmi.branches.deleteRemoteBranch`, async (node) => {
-        const connection = instance.getConnection();
-        const repoPath = connection.config.homeDirectory;
-        const repo = new Git(repoPath);
-
-        if (connection) {
-          if (repo.canUseGit() && await repo.isGitRepo()) {
-            if (!node){
-              var remote_to_delete_from = await vscode.window.showInputBox({
-                prompt: `Remote name`
-              });
-              var remote_branch_to_delete = await vscode.window.showInputBox({
-                prompt: `Remote branch to delete`
-              });
-            }
-            else{
-              var remote_to_delete_from = node.branch_name.split('/')[1];
-              var remote_branch_to_delete = node.branch_name.split('/')[2];
-            }
-
-            if (remote_to_delete_from && remote_branch_to_delete) {
-              try {
-                await repo.deleteRemoteBranch(remote_to_delete_from, remote_branch_to_delete);
-                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
-                vscode.window.showInformationMessage(`Remote branch successfully deleted.`);
-              } catch (e) {
-                vscode.window.showErrorMessage(`Error deleting remote branch in ${repoPath}. ${e}`);
+                vscode.window.showErrorMessage(`Error deleting branch in ${repoPath}. ${e}`);
               }
 
               this.refresh();
@@ -123,14 +89,16 @@ module.exports = class Branches {
               var branch_to_checkout = await vscode.window.showInputBox({
                 prompt: `Name of branch to checkout`
               });
+              var remote_or_local = null;
             }
             else{
               var branch_to_checkout = node.branch_name;
+              var remote_or_local = node.contextValue;
             }
 
             if (branch_to_checkout) {
               try {
-                await repo.checkout(branch_to_checkout, node.contextValue);
+                await repo.checkout(branch_to_checkout, remote_or_local);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`${branch_to_checkout} checked out successfully.`);
               } catch (e) {

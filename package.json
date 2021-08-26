@@ -43,8 +43,7 @@
 		"onCommand:git-client-ibmi.viewCommitFileDiff",
 		"onCommand:git-client-ibmi.branches.refresh",
 		"onCommand:git-client-ibmi.branches.branch",
-		"onCommand:git-client-ibmi.branches.deleteLocalBranch",
-		"onCommand:git-client-ibmi.branches.deleteRemoteBranch",
+		"onCommand:git-client-ibmi.branches.deleteBranch",
 		"onCommand:git-client-ibmi.branches.checkout",
 		"onCommand:git-client-ibmi.branches.merge"
 	],
@@ -118,13 +117,8 @@
 				"icon": "$(git-branch-create)"
 			},
 			{
-				"command": "git-client-ibmi.branches.deleteLocalBranch",
-				"title": "Delete Local Branch",
-				"category": "Git on IBM i"
-			},
-			{
-				"command": "git-client-ibmi.branches.deleteRemoteBranch",
-				"title": "Delete Remote Branch",
+				"command": "git-client-ibmi.branches.deleteBranch",
+				"title": "Delete Branch",
 				"category": "Git on IBM i"
 			},
 			{
@@ -233,12 +227,8 @@
 					"when": "view == git-client-ibmi.branches && viewItem == remote || viewItem == local"
 				},
 				{
-					"command": "git-client-ibmi.branches.deleteLocalBranch",
-					"when": "view == git-client-ibmi.branches && viewItem == local"
-				},
-				{
-					"command": "git-client-ibmi.branches.deleteRemoteBranch",
-					"when": "view == git-client-ibmi.branches && viewItem == remote"
+					"command": "git-client-ibmi.branches.deleteBranch",
+					"when": "view == git-client-ibmi.branches && viewItem == remote || viewItem == local"
 				},
 				{
 					"command": "git-client-ibmi.branches.merge",

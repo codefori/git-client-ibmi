@@ -149,6 +149,7 @@ module.exports = class Status {
           if (repo.canUseGit() && await repo.isGitRepo()) {
             try {
               await repo.push();
+              await vscode.commands.executeCommand(`git-client-ibmi.branches.refresh`);
               vscode.window.showInformationMessage(`Push successful.`);
             } catch (e) {
               vscode.window.showErrorMessage(e);
