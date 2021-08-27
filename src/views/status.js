@@ -284,10 +284,10 @@ module.exports = class Status {
         if (element) {
           switch (element.contextValue) {
           case `changes`:
-            items = this.status.staged.map(item => new StageFile(repoPath, item.path, item.state, `unstaged`));
+            items = this.status.unstaged.map(item => new StageFile(repoPath, item.path, item.state, `unstaged`));
             break;
           case `staged`:
-            items = this.status.unstaged.map(item => new StageFile(repoPath, item.path, item.state, `staged`));
+            items = this.status.staged.map(item => new StageFile(repoPath, item.path, item.state, `staged`));
             break;
           }
 

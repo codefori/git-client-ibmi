@@ -119,7 +119,7 @@ module.exports = class Git {
     const connection = instance.getConnection();
     let staged = [], unstaged = [];
 
-    let item = {path: ``, state: []};
+    let item = {path: ``, status: ``, state: []};
     let content = await connection.paseCommand(
       `echo '"' && ${this.gitPath} status --short`,
       this.path,
@@ -130,15 +130,21 @@ module.exports = class Git {
     for (let line of content.split(`\n`)) {
       if (line.trim() === ``) continue;
       
-      item.state = line.substr(0, 2).split(``);
+      item.status = line.substr(0, 2)
+      item.state = item.status.split(``);
       item.path = line.substr(3);
 
-      if (item.state[0] !== ` `) {
+      if (item.status === `??`) { // It's a new, untracked file
         unstaged.push({path: item.path, state: item.state[0]});
-      }
 
-      if (item.state[1] !== ` `) {
-        staged.push({path: item.path, state: item.state[1]});
+      } else {
+        if (item.state[0] !== ` `) {
+          staged.push({path: item.path, state: item.state[0]});
+        }
+
+        if (item.state[1] !== ` `) {
+          unstaged.push({path: item.path, state: item.state[1]});
+        }
       }
     }
 
