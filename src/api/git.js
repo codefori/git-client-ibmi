@@ -273,21 +273,23 @@ module.exports = class Git {
    * @param {string} remote_or_local
    */
      async deleteBranch(branch_to_delete, remote_or_local) {
-      const connection = instance.getConnection();
-      if(remote_or_local == "remote"){
-        const split_branch_to_delete = branch_to_delete.split('/');
-        var command = `${this.gitPath} push "${split_branch_to_delete[1]}" --delete "${split_branch_to_delete[2]}"`;
-      }
-      else{
-        //TODO: add ability to force delete branch that hasn't been merged yet by using "-D" instead of "-d".
-        // leaving "-d" for now to avoid accidentally deleting an unmerged branch
-        var command = `${this.gitPath} branch -d "${branch_to_delete}"`;
-      }
+      let result = await vscode.window.showWarningMessage(`Are you sure you want to delete branch ${branch_to_delete}?`, `Yes`, `Cancel`);
 
-      await connection.paseCommand(
-        command,
-        this.path,
-      );
+      if (result === `Yes`) {
+        const connection = instance.getConnection();
+        if(remote_or_local == "remote"){
+          const split_branch_to_delete = branch_to_delete.split('/');
+          var command = `${this.gitPath} push "${split_branch_to_delete[1]}" --delete "${split_branch_to_delete[2]}"`;
+        }
+        else{
+          var command = `${this.gitPath} branch -D "${branch_to_delete}"`;
+        }
+
+        await connection.paseCommand(
+          command,
+          this.path,
+        );
+      }
     }
 
     /**
