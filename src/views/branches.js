@@ -229,14 +229,13 @@ class Branch extends vscode.TreeItem {
    * 
    * @param {string} branch_name 
    * @param {contextValue} contextValue
-   * @param {string} state //empty string by default. only one branch can have the value of "checked out" at a time.
    */
    constructor(branch_name, contextValue, state = "") {
     super(branch_name, vscode.TreeItemCollapsibleState.None);
 
     this.branch_name = branch_name;
     this.contextValue = contextValue;
-    this.description = state;
+    this.description = state; //only one branch should have the description of "checked out" at a time
 
     this.iconPath = new vscode.ThemeIcon(`git-branch`);
   }
