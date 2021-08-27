@@ -10,6 +10,8 @@ This extension depends on [Code for IBM i](https://github.com/halcyon-tech/code-
 
 This adds 'Status', 'Commits' and 'File History' to the source control view. It will assume that your home directory, set in Code for IBM i is also a git repository. When you change your home directory, the panels will refresh automatically.
 
+TODO: Stashing
+
 #### Branches
 
 This view will display remote and local branches and allow you to create, delete, checkout, and merge branches. 

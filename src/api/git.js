@@ -279,6 +279,8 @@ module.exports = class Git {
         var command = `${this.gitPath} push "${split_branch_to_delete[1]}" --delete "${split_branch_to_delete[2]}"`;
       }
       else{
+        //TODO: add ability to force delete branch that hasn't been merged yet by using "-D" instead of "-d".
+        // leaving "-d" for now to avoid accidentally deleting an unmerged branch
         var command = `${this.gitPath} branch -d "${branch_to_delete}"`;
       }
 

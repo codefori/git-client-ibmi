@@ -32,7 +32,6 @@ module.exports = class Branches {
             if (new_branch_name) {
               try {
                 await repo.create_branch(new_branch_name);
-                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Branch created successfully.`);
               } catch (e) {
                 vscode.window.showErrorMessage(`Error creating branch in ${repoPath}. ${e}`);
@@ -65,7 +64,6 @@ module.exports = class Branches {
             if (branch_to_delete) {
               try {
                 await repo.deleteBranch(branch_to_delete, remote_or_local);
-                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`Branch successfully deleted.`);
               } catch (e) {
                 vscode.window.showErrorMessage(`Error deleting branch in ${repoPath}. ${e}`);
