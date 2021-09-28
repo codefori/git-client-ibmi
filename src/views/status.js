@@ -101,20 +101,24 @@ module.exports = class Status {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            const message = await vscode.window.showInputBox({
-              prompt: `Commit message`
-            });
+            if (this.status && this.status.staged && this.status.staged.length > 0) {
+              const message = await vscode.window.showInputBox({
+                prompt: `Commit message`
+              });
 
-            if (message) {
-              try {
-                await repo.commit(message);
-                await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
-                vscode.window.showInformationMessage(`Commit successful.`);
-              } catch (e) {
-                vscode.window.showErrorMessage(`Error making commit in ${repoPath}. ${e}`);
+              if (message) {
+                try {
+                  await repo.commit(message);
+                  await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
+                  vscode.window.showInformationMessage(`Commit successful.`);
+                } catch (e) {
+                  vscode.window.showErrorMessage(`Error making commit in ${repoPath}. ${e}`);
+                }
+
+                this.refresh();
               }
-
-              this.refresh();
+            } else {
+              vscode.window.showErrorMessage(`To make a commit you must stage your changes.`);
             }
           }
         }
