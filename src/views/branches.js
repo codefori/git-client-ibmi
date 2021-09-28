@@ -31,7 +31,7 @@ module.exports = class Branches {
 
             if (new_branch_name) {
               try {
-                await repo.create_branch(new_branch_name);
+                await repo.createBranch(new_branch_name);
                 vscode.window.showInformationMessage(`Branch created successfully.`);
               } catch (e) {
                 vscode.window.showErrorMessage(`Error creating branch in ${repoPath}. ${e}`);
@@ -199,8 +199,7 @@ module.exports = class Branches {
         }
 
         try {
-          const branch_list = await repo.list_branches();
-          this.branch_list = branch_list;
+          this.branch_list = await repo.listBranch();
         } catch (e) {
           items = [new vscode.TreeItem(`Error fetching branches for ${repoPath}`)];
         }
