@@ -50,20 +50,21 @@ module.exports = class Branches {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
-            if (!node){
-              var branch_to_delete = await vscode.window.showInputBox({
+            let branch_to_delete, branchLocation;
+
+            if (!node) {
+              branch_to_delete = await vscode.window.showInputBox({
                 prompt: `Branch to delete`
               });
-              var remote_or_local = null;
-            }
-            else{
-              var branch_to_delete = node.branch_name;
-              var remote_or_local = node.contextValue;
+              branchLocation = null;
+            } else {
+              branch_to_delete = node.branch_name;
+              branchLocation = node.contextValue;
             }
 
             if (branch_to_delete) {
               try {
-                await repo.deleteBranch(branch_to_delete, remote_or_local);
+                await repo.deleteBranch(branch_to_delete, branchLocation);
                 vscode.window.showInformationMessage(`Branch successfully deleted.`);
               } catch (e) {
                 vscode.window.showErrorMessage(`Error deleting branch in ${repoPath}. ${e}`);
@@ -83,20 +84,22 @@ module.exports = class Branches {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
+            let branch_to_checkout, branchLocation;
+
             if (!node){
-              var branch_to_checkout = await vscode.window.showInputBox({
+              branch_to_checkout = await vscode.window.showInputBox({
                 prompt: `Name of branch to checkout`
               });
-              var remote_or_local = null;
+              branchLocation = null;
             }
             else{
-              var branch_to_checkout = node.branch_name;
-              var remote_or_local = node.contextValue;
+              branch_to_checkout = node.branch_name;
+              branchLocation = node.contextValue;
             }
 
             if (branch_to_checkout) {
               try {
-                await repo.checkout(branch_to_checkout, remote_or_local);
+                await repo.checkout(branch_to_checkout, branchLocation);
                 await vscode.commands.executeCommand(`git-client-ibmi.commits.refresh`);
                 vscode.window.showInformationMessage(`${branch_to_checkout} checked out successfully.`);
               } catch (e) {
@@ -116,13 +119,14 @@ module.exports = class Branches {
 
         if (connection) {
           if (repo.canUseGit() && await repo.isGitRepo()) {
+            let branch_to_merge_into_current_branch;
             if (!node){
-              var branch_to_merge_into_current_branch = await vscode.window.showInputBox({
+              branch_to_merge_into_current_branch = await vscode.window.showInputBox({
                 prompt: `Name of branch to merge into the current branch`
               });
             }
             else{
-              var branch_to_merge_into_current_branch = node.branch_name;
+              branch_to_merge_into_current_branch = node.branch_name;
             }
 
             if (branch_to_merge_into_current_branch) {
@@ -179,18 +183,18 @@ module.exports = class Branches {
 
         if (element) {
           switch (element.contextValue) {
-            case `remote_branches`:
-              items = this.branch_list.remote.map(item => new Branch(item, 'remote'));
-              items.contextValue = 'remotes';
-              break;
-            case `local_branches`:
-              items = this.branch_list.local.map(item => new Branch(item.branch_name, 'local', item.state));
-              break;
-            }
+          case `remote_branches`:
+            items = this.branch_list.remote.map(item => new Branch(item, `remote`));
+            items.contextValue = `remotes`;
+            break;
+          case `local_branches`:
+            items = this.branch_list.local.map(item => new Branch(item.branch_name, `local`, item.state));
+            break;
+          }
         } else {
           items = [
-            new Subitem('Remote Branches', 'remote_branches'),
-            new Subitem('Local Branches', 'local_branches')
+            new Subitem(`Remote Branches`, `remote_branches`),
+            new Subitem(`Local Branches`, `local_branches`)
           ]
         }
 
@@ -230,7 +234,7 @@ class Branch extends vscode.TreeItem {
    * @param {string} branch_name 
    * @param {contextValue} contextValue
    */
-   constructor(branch_name, contextValue, state = "") {
+  constructor(branch_name, contextValue, state = ``) {
     super(branch_name, vscode.TreeItemCollapsibleState.None);
 
     this.branch_name = branch_name;

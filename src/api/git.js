@@ -229,11 +229,11 @@ module.exports = class Git {
   /**
    * @returns {remote: branch_name[], local: {branch_name, state}[]}}
    */
-   async list_branches() {
+  async list_branches() {
     const connection = instance.getConnection();
     let remote = [], local = [];
 
-    let item = {branch_name: '', state: ''};
+    let item = {branch_name: ``, state: ``};
     let content = await connection.paseCommand(
       `echo '"' && ${this.gitPath} branch --all --list`,
       this.path,
@@ -244,89 +244,92 @@ module.exports = class Git {
     for (let line of content.split(`\n`)) {
       if (line.trim() === ``) continue;
       
-      item.state = (line[0] == '*') ? 'checked out' : '';
+      item.state = (line[0] == `*`) ? `checked out` : ``;
       item.branch_name = line.substr(2);
-      const remote_or_local = (item.branch_name.split('/')[0] == 'remotes') ? 'remote' : 'local';
+      const remote_or_local = (item.branch_name.split(`/`)[0] == `remotes`) ? `remote` : `local`;
 
       switch (remote_or_local) {
-        case `remote`:
-          remote.push(item.branch_name);
-          break;
-        case `local`:
-          local.push({branch_name: item.branch_name, state: item.state});
-          break;
+      case `remote`:
+        remote.push(item.branch_name);
+        break;
+      case `local`:
+        local.push({branch_name: item.branch_name, state: item.state});
+        break;
       }
     }
 
     return {remote, local};
   }
 
-    /**
+  /**
    * Create a branch
    * @param {string} new_branch_name 
    */
-     async create_branch(new_branch_name) {
-      const connection = instance.getConnection();
-      await connection.paseCommand(
-        `${this.gitPath} branch "${new_branch_name}"`,
-        this.path,
-      );
-    }
+  async create_branch(new_branch_name) {
+    const connection = instance.getConnection();
+    await connection.paseCommand(
+      `${this.gitPath} branch "${new_branch_name}"`,
+      this.path,
+    );
+  }
 
-    /**
+  /**
    * Delete a remote branch
    * @param {string} branch_to_delete 
-   * @param {string} remote_or_local
+   * @param {string} branchLocation
    */
-     async deleteBranch(branch_to_delete, remote_or_local) {
-      let result = await vscode.window.showWarningMessage(`Are you sure you want to delete branch ${branch_to_delete}?`, `Yes`, `Cancel`);
+  async deleteBranch(branch_to_delete, branchLocation) {
+    let result = await vscode.window.showWarningMessage(`Are you sure you want to delete branch ${branch_to_delete}?`, `Yes`, `Cancel`);
 
-      if (result === `Yes`) {
-        const connection = instance.getConnection();
-        if(remote_or_local == "remote"){
-          const split_branch_to_delete = branch_to_delete.split('/');
-          var command = `${this.gitPath} push "${split_branch_to_delete[1]}" --delete "${split_branch_to_delete[2]}"`;
-        }
-        else{
-          var command = `${this.gitPath} branch -D "${branch_to_delete}"`;
-        }
-
-        await connection.paseCommand(
-          command,
-          this.path,
-        );
-      }
-    }
-
-    /**
-   * Checkout a branch
-   * @param {string} branch_to_checkout 
-   * @param {string} remote_or_local 
-   */
-     async checkout(branch_to_checkout, remote_or_local) {
+    if (result === `Yes`) {
       const connection = instance.getConnection();
-      if(remote_or_local == "remote"){
-        const split_branch_name = branch_to_checkout.split('/');
-        var command = `${this.gitPath} checkout -b "${split_branch_name[2]}" "${split_branch_name[1]}"/"${split_branch_name[2]}"`;
+      let command;
+
+      if (branchLocation === `remote`) {
+        const split_branch_to_delete = branch_to_delete.split(`/`);
+        command = `${this.gitPath} push "${split_branch_to_delete[1]}" --delete "${split_branch_to_delete[2]}"`;
+      } else {
+        command = `${this.gitPath} branch -D "${branch_to_delete}"`;
       }
-      else{
-        var command = `${this.gitPath} checkout "${branch_to_checkout}"`;
-      }
+
       await connection.paseCommand(
         command,
         this.path,
       );
     }
+  }
 
-    /**
+  /**
+   * Checkout a branch
+   * @param {string} branch_to_checkout 
+   * @param {string} branchLocation 
+   */
+  async checkout(branch_to_checkout, branchLocation) {
+    const connection = instance.getConnection();
+
+    let command;
+    if (branchLocation === `remote`) {
+      const split_branch_name = branch_to_checkout.split(`/`);
+      command = `${this.gitPath} checkout -b "${split_branch_name[2]}" "${split_branch_name[1]}"/"${split_branch_name[2]}"`;
+    } else {
+      command = `${this.gitPath} checkout "${branch_to_checkout}"`;
+    }
+
+    await connection.paseCommand(
+      command,
+      this.path,
+    );
+  }
+
+  /**
    * Merge a branch into the current branch
    * @param {string} branch_to_merge_into_current_branch 
    */
-     async merge(branch_to_merge_into_current_branch) {
-      const connection = instance.getConnection();
-      await connection.paseCommand(
-        `${this.gitPath} merge "${branch_to_merge_into_current_branch}"`,
-        this.path,
-      );
-    }
+  async merge(branch_to_merge_into_current_branch) {
+    const connection = instance.getConnection();
+    await connection.paseCommand(
+      `${this.gitPath} merge "${branch_to_merge_into_current_branch}"`,
+      this.path,
+    );
+  }
 }
