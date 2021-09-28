@@ -199,7 +199,7 @@ module.exports = class Branches {
         }
 
         try {
-          this.branch_list = await repo.listBranch();
+          this.branch_list = await repo.listBranches();
         } catch (e) {
           items = [new vscode.TreeItem(`Error fetching branches for ${repoPath}`)];
         }

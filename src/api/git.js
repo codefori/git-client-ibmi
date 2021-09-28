@@ -229,7 +229,7 @@ module.exports = class Git {
   /**
    * @returns {remote: branch_name[], local: {branch_name, state}[]}}
    */
-  async listBranch() {
+  async listBranches() {
     const connection = instance.getConnection();
     let remote = [], local = [];
 
