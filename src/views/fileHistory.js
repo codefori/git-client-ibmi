@@ -25,8 +25,10 @@ module.exports = class fileHistory {
           const connection = instance.getConnection();
 
           if (connection) {
-            const repoPath = connection.config.homeDirectory;
-            const relativePath = doc.uri.path.substring(connection.config.homeDirectory.length+1);
+            let repoPath = connection.config.homeDirectory;
+            if (!repoPath.endsWith(`/`)) repoPath = `${repoPath}/`;
+
+            const relativePath = doc.uri.path.substring(repoPath.length);
 
             this.currentFile = relativePath;
             this.refresh();
