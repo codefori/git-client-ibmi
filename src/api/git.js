@@ -207,9 +207,10 @@ module.exports = class Git {
    */
   async push() {
     const connection = instance.getConnection();
+    const branch = await this.getCurrentBranch();
 
     await connection.paseCommand(
-      `${this.gitPath} push`,
+      `${this.gitPath} push ${branch ? `origin ${branch}` : ``}`.trim(),
       this.path,
     );
   }
@@ -226,6 +227,21 @@ module.exports = class Git {
     );
   }
 
+  /**
+   * Gets the current branch of the repo
+   * @returns {string}
+   */
+  async getCurrentBranch() {
+    const connection = instance.getConnection();
+  
+    try {
+      const result = await connection.paseCommand(`${this.gitPath} rev-parse --abbrev-ref HEAD`, this.path);
+      return result;
+    } catch (e) {
+      return false;
+    }
+  }
+  
   /**
    * @returns {remote: branch_name[], local: {branch_name, state}[]}}
    */
