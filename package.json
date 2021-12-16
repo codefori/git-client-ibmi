@@ -147,22 +147,26 @@
 			"scm": [{
 					"id": "git-client-ibmi.branches",
 					"name": "Branches",
-					"contextualTitle": "IBM i"
+					"contextualTitle": "IBM i",
+					"when": "code-for-ibmi:connected == true"
 				},
 				{
 					"id": "git-client-ibmi.status",
 					"name": "Status",
-					"contextualTitle": "IBM i"
+					"contextualTitle": "IBM i",
+					"when": "code-for-ibmi:connected == true"
 				},
 				{
 					"id": "git-client-ibmi.commits",
 					"name": "Commits",
-					"contextualTitle": "IBM i"
+					"contextualTitle": "IBM i",
+					"when": "code-for-ibmi:connected == true"
 				},
 				{
 					"id": "git-client-ibmi.fileHistory",
 					"name": "File History",
-					"contextualTitle": "IBM i"
+					"contextualTitle": "IBM i",
+					"when": "code-for-ibmi:connected == true"
 				}
 			]
 		},
