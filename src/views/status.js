@@ -184,7 +184,10 @@ module.exports = class Status {
               const libConfig = this.gitLibraries.find(setting => setting.library.toUpperCase() === library);
 
               if (libConfig) {
-                await connection.paseCommand(`mkdir ${path.posix.join(libConfig.ifsPath, sourceFile)}`, `.`, 1);
+                await vscode.commands.executeCommand(`code-for-ibmi.runCommand`, {
+                  command: `mkdir ${path.posix.join(libConfig.ifsPath, sourceFile)}`,
+                  environment: `pase`
+                })
                 await content.writeStreamfile(path.posix.join(libConfig.ifsPath, sourceFile, baseName), document.getText());
 
                 if (libConfig.ifsPath.toUpperCase() === repoPath.toUpperCase()) {

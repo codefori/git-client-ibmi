@@ -23,14 +23,28 @@ module.exports = class Git {
   }
 
   /**
+   * Execute command on remote system
+   * @param {string} command 
+   * @returns {Promise<string>}
+   */
+  async paseCommand(command) {
+    const execution = await vscode.commands.executeCommand(`code-for-ibmi.runCommand`, {
+      command,
+      environment: `pase`,
+      cwd: this.path
+    });
+
+    if (execution.code === 0 || execution.code === null) return Promise.resolve(execution.stdout);
+    else return Promise.reject(execution.stderr);
+  }
+
+  /**
    * Checks if the directory is a git repo
    * @returns {boolean}
    */
   async isGitRepo() {
-    const connection = instance.getConnection();
-
     try {
-      const result = await connection.paseCommand(`${this.gitPath} rev-parse --is-inside-work-tree`, this.path);
+      const result = await this.paseCommand(`${this.gitPath} rev-parse --is-inside-work-tree`, this.path);
       return true;
     } catch (e) {
       return false;
@@ -44,9 +58,7 @@ module.exports = class Git {
    * @returns {{hash: string, author: string, when: string, text: string}[]}
    */
   async getCommits(count = 50, file) {
-    const connection = instance.getConnection();
-
-    const result = await connection.paseCommand(`${this.gitPath} --no-pager log --max-count=${count} --pretty=format:"%h|%an|%ar|%s" ${file ? ` -- ${file}` : ``}`, this.path);
+    const result = await this.paseCommand(`${this.gitPath} --no-pager log --max-count=${count} --pretty=format:"%h|%an|%ar|%s" ${file ? ` -- ${file}` : ``}`, this.path);
 
     //TODO: No changes message
     if (result === ``) return [];
@@ -74,9 +86,7 @@ module.exports = class Git {
    * @returns {{hash: string, path: string}[]}
    */
   async getChangesInCommit(hash) {
-    const connection = instance.getConnection();
-
-    const files = await connection.paseCommand(
+    const files = await this.paseCommand(
       `${this.gitPath} diff-tree --no-commit-id --name-only -r ${hash}`,
       this.path,
     );
@@ -102,9 +112,7 @@ module.exports = class Git {
    * @returns {string}
    */
   async getFileContent(hash, relativePath) {
-    const connection = instance.getConnection();
-
-    const content = await connection.paseCommand(
+    const content = await this.paseCommand(
       `${this.gitPath} show ${hash}:${relativePath}`,
       this.path,
     );
@@ -116,11 +124,10 @@ module.exports = class Git {
    * @returns {{staged: {path, state}[], unstaged: {path, state}[]}}
    */
   async status() {
-    const connection = instance.getConnection();
     let staged = [], unstaged = [];
 
     let item = {path: ``, status: ``, state: []};
-    let content = await connection.paseCommand(
+    let content = await this.paseCommand(
       `echo '"' && ${this.gitPath} status --short`,
       this.path,
     );
@@ -155,9 +162,7 @@ module.exports = class Git {
    * @param {string} path 
    */
   async stage(path) {
-    const connection = instance.getConnection();
-
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} add ${path}`,
       this.path,
     );
@@ -167,9 +172,7 @@ module.exports = class Git {
    * @param {string} path 
    */
   async unstage(path) {
-    const connection = instance.getConnection();
-    
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} reset -- ${path}`,
       this.path,
     );
@@ -179,9 +182,7 @@ module.exports = class Git {
    * @param {string} path 
    */
   async restore(path) {
-    const connection = instance.getConnection();
-    
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} checkout -- ${path}`,
       this.path,
     );
@@ -192,11 +193,9 @@ module.exports = class Git {
    * @param {string} message 
    */
   async commit(message) {
-    const connection = instance.getConnection();
-
     message = message.replace(new RegExp(`"`, `g`), `\\"`);
     
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} commit -m "${message}"`,
       this.path,
     );
@@ -206,10 +205,9 @@ module.exports = class Git {
    * Push commits
    */
   async push() {
-    const connection = instance.getConnection();
     const branch = await this.getCurrentBranch();
 
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} push ${branch ? `origin ${branch}` : ``}`.trim(),
       this.path,
     );
@@ -219,9 +217,7 @@ module.exports = class Git {
    * Pull commits
    */
   async pull() {
-    const connection = instance.getConnection();
-
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} pull`,
       this.path,
     );
@@ -235,7 +231,7 @@ module.exports = class Git {
     const connection = instance.getConnection();
   
     try {
-      const result = await connection.paseCommand(`${this.gitPath} rev-parse --abbrev-ref HEAD`, this.path);
+      const result = await this.paseCommand(`${this.gitPath} rev-parse --abbrev-ref HEAD`, this.path);
       return result;
     } catch (e) {
       return false;
@@ -246,11 +242,10 @@ module.exports = class Git {
    * @returns {remote: branch_name[], local: {branch_name, state}[]}}
    */
   async listBranches() {
-    const connection = instance.getConnection();
     let remote = [], local = [];
 
     let item = {branch_name: ``, state: ``};
-    let content = await connection.paseCommand(
+    let content = await this.paseCommand(
       `echo '"' && ${this.gitPath} branch --all --list`,
       this.path,
     );
@@ -282,8 +277,7 @@ module.exports = class Git {
    * @param {string} branchName Branch name to create
    */
   async createBranch(branchName) {
-    const connection = instance.getConnection();
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} branch "${branchName}"`,
       this.path,
     );
@@ -298,7 +292,6 @@ module.exports = class Git {
     let result = await vscode.window.showWarningMessage(`Are you sure you want to delete branch ${branchName}?`, `Yes`, `Cancel`);
 
     if (result === `Yes`) {
-      const connection = instance.getConnection();
       let command;
 
       if (branchLocation === `remote`) {
@@ -308,7 +301,7 @@ module.exports = class Git {
         command = `${this.gitPath} branch -D "${branchName}"`;
       }
 
-      await connection.paseCommand(
+      await this.paseCommand(
         command,
         this.path,
       );
@@ -321,8 +314,6 @@ module.exports = class Git {
    * @param {string} branchLocation 
    */
   async checkout(branchName, branchLocation) {
-    const connection = instance.getConnection();
-
     let command;
     if (branchLocation === `remote`) {
       const split_branch_name = branchName.split(`/`);
@@ -331,7 +322,7 @@ module.exports = class Git {
       command = `${this.gitPath} checkout "${branchName}"`;
     }
 
-    await connection.paseCommand(
+    await this.paseCommand(
       command,
       this.path,
     );
@@ -342,8 +333,7 @@ module.exports = class Git {
    * @param {string} branchName Branch to merge into current branch
    */
   async merge(branchName) {
-    const connection = instance.getConnection();
-    await connection.paseCommand(
+    await this.paseCommand(
       `${this.gitPath} merge "${branchName}"`,
       this.path,
     );
